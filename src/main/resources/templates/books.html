@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${appName} + ' - ' + ${appVersion}">Library Book Catalog</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container header-container">
+            <div class="branding">
+                <div class="logo-mark">&#128218;</div>
+                <div>
+                    <h1 class="app-title" th:text="${appName}">Library Book Catalog</h1>
+                    <p class="app-description" th:text="${appDescription}">A simple, responsive web application for managing library book collections.</p>
+                </div>
+            </div>
+            <div class="version-badge">
+                <span class="badge-label">Version</span>
+                <span class="badge-number" id="app-version" th:text="${appVersion}">v1.0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container main-content">
+
+        <!-- Flash Alert Messages -->
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" id="success-alert">
+            <span class="alert-icon">&#10003;</span>
+            <span th:text="${successMessage}">Operation completed successfully.</span>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" id="error-alert">
+            <span class="alert-icon">&#9888;</span>
+            <span th:text="${errorMessage}">An error occurred.</span>
+        </div>
+
+        <div class="grid-layout">
+
+            <!-- Left / Main Column: Book Catalog & Search -->
+            <section class="card catalog-card">
+                <div class="card-header">
+                    <div class="header-title-group">
+                        <h2>Book Inventory</h2>
+                        <span class="count-pill" th:text="${#lists.size(books)} + ' book(s)'">0 book(s)</span>
+                    </div>
+
+                    <!-- Search Form -->
+                    <form th:action="@{/books}" method="get" class="search-form" id="search-form">
+                        <div class="search-input-group">
+                            <input type="text"
+                                   name="query"
+                                   id="search-input"
+                                   class="form-control"
+                                   placeholder="Search by title or author..."
+                                   th:value="${query}">
+                            <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
+                            <a th:if="${isSearching}" th:href="@{/books}" class="btn btn-secondary" id="clear-search-btn">Clear</a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="search-context-bar" th:if="${isSearching}">
+                    <p>
+                        Showing search results for: <strong th:text="${query}">query</strong>
+                        &bull; <a th:href="@{/books}">View full catalog</a>
+                    </p>
+                </div>
+
+                <!-- Books Table -->
+                <div class="table-responsive" th:if="${not #lists.isEmpty(books)}">
+                    <table class="book-table" id="books-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 10%;">ID</th>
+                                <th scope="col" style="width: 32%;">Title</th>
+                                <th scope="col" style="width: 25%;">Author</th>
+                                <th scope="col" style="width: 18%;">Genre</th>
+                                <th scope="col" style="width: 15%;">Year</th>
+                                <th scope="col" style="width: 10%; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="book : ${books}" th:id="'book-row-' + ${book.id}">
+                                <td class="book-id" th:text="${book.id}">1</td>
+                                <td class="book-title"><strong th:text="${book.title}">Book Title</strong></td>
+                                <td class="book-author" th:text="${book.author}">Author Name</td>
+                                <td>
+                                    <span class="genre-tag" th:text="${book.genre}">Genre</span>
+                                </td>
+                                <td class="book-year" th:text="${book.publicationYear}">2020</td>
+                                <td style="text-align: right;">
+                                    <form th:action="@{/books/delete/{id}(id=${book.id})}" method="post" class="delete-form"
+                                          onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                        <button type="submit" class="btn btn-danger btn-sm" th:id="'delete-book-' + ${book.id}">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty States -->
+                <div class="empty-state" th:if="${#lists.isEmpty(books) and isSearching}" id="empty-search-state">
+                    <div class="empty-icon">&#128269;</div>
+                    <h3>No matching books found</h3>
+                    <p>No books in the catalog matched "<strong><span th:text="${query}">query</span></strong>". Try a different title or author keyword.</p>
+                    <a th:href="@{/books}" class="btn btn-secondary">View All Books</a>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(books) and not isSearching}" id="empty-catalog-state">
+                    <div class="empty-icon">&#128214;</div>
+                    <h3>The catalog is currently empty</h3>
+                    <p>There are no books in the collection yet. Use the form on the right to add your first book!</p>
+                </div>
+            </section>
+
+            <!-- Right Column: Add Book Form -->
+            <aside class="card form-card">
+                <div class="card-header">
+                    <h2>Add a New Book</h2>
+                </div>
+                <form th:action="@{/books}" th:object="${newBook}" method="post" class="book-form" id="add-book-form">
+                    <div class="form-group">
+                        <label for="title">Title <span class="required-star">*</span></label>
+                        <input type="text"
+                               id="title"
+                               th:field="*{title}"
+                               class="form-control"
+                               placeholder="e.g. To Kill a Mockingbird"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="author">Author <span class="required-star">*</span></label>
+                        <input type="text"
+                               id="author"
+                               th:field="*{author}"
+                               class="form-control"
+                               placeholder="e.g. Harper Lee"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="genre">Genre</label>
+                        <input type="text"
+                               id="genre"
+                               th:field="*{genre}"
+                               class="form-control"
+                               placeholder="e.g. Classic Fiction">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="publicationYear">Publication Year <span class="required-star">*</span></label>
+                        <input type="number"
+                               id="publicationYear"
+                               th:field="*{publicationYear}"
+                               class="form-control"
+                               placeholder="e.g. 1960"
+                               min="1"
+                               max="2100"
+                               required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success btn-block" id="submit-book-btn">
+                            + Add Book to Catalog
+                        </button>
+                    </div>
+                </form>
+            </aside>
+
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-container">
+            <p>&copy; Library Book Catalog &bull; System Version <span th:text="${appVersion}">v1.0</span></p>
+            <p class="api-links">REST API available at <code>/api/books</code> &bull; Health: <code>/actuator/health</code></p>
+        </div>
+    </footer>
+
+</body>
+</html>
+
