@@ -40,8 +40,8 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            -t ghcr.io/Pranav-1885/library-book-catalog:latest \
-            -t ghcr.io/Pranav-1885/library-book-catalog:${{ github.sha }} .
+            -t ghcr.io/pranav-1885/library-book-catalog:latest \
+            -t ghcr.io/pranav-1885/library-book-catalog:${{ github.sha }} .
 
       # Step 5: Login to GHCR
       - name: Login to GitHub Container Registry
@@ -55,5 +55,5 @@ jobs:
       - name: Push Docker image to GHCR
         if: github.event_name == 'push'
         run: |
-          docker push ghcr.io/Pranav-1885/library-book-catalog:latest
-          docker push ghcr.io/Pranav-1885/library-book-catalog:${{ github.sha }}
+          docker push ghcr.io/pranav-1885/library-book-catalog:latest
+          docker push ghcr.io/pranav-1885/library-book-catalog:${{ github.sha }}
