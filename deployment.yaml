@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: library-catalog-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: library-catalog
+  template:
+    metadata:
+      labels:
+        app: library-catalog
+    spec:
+      containers:
+      - name: library-catalog-app
+        image: ghcr.io/pranav-1885/library-book-catalog:latest
+        ports:
+        - containerPort: 8081
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 15
