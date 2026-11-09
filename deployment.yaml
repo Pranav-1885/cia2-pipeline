@@ -15,6 +15,7 @@ spec:
       containers:
       - name: library-catalog-app
         image: ghcr.io/pranav-1885/library-book-catalog:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8081
         resources:
