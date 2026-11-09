@@ -16,7 +16,7 @@ public class BookWebController {
 
     private final BookService bookService;
 
-    @Value("${app.name:Library Book Catalog 2}")
+    @Value("${app.name:Library Book Catalog 3}")
     private String appName;
 
     @Value("${app.description:A simple, responsive web application for managing library book collections.}")
