@@ -1,5 +1,4 @@
-
-name: Library Catalog CI
+name: Library Catalog CI/CD
 
 on:
   push:
@@ -15,8 +14,8 @@ permissions:
   packages: write
 
 jobs:
-  build-and-publish:
-    name: Build, Test and Publish Docker Image
+  build-and-deploy:
+    name: Build, Test, Push and Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -57,3 +56,30 @@ jobs:
         run: |
           docker push ghcr.io/pranav-1885/library-book-catalog:latest
           docker push ghcr.io/pranav-1885/library-book-catalog:${{ github.sha }}
+
+      # Step 7: Azure Login for AKS Deployment
+      - name: Azure Login
+        if: github.event_name == 'push'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Step 8: Set AKS Context
+      - name: Set AKS Cluster Context
+        if: github.event_name == 'push'
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: 'devops-cia2-rg'
+          cluster-name: 'library-aks-cluster'
+
+      # Step 9: Deploy to Kubernetes Cluster
+      - name: Deploy to AKS
+        if: github.event_name == 'push'
+        uses: Azure/k8s-deploy@v5
+        with:
+          manifests: |
+            deployment.yaml
+            service.yaml
+          images: |
+            ghcr.io/pranav-1885/library-book-catalog:${{ github.sha }}
+          namespace: 'default'
