@@ -14,7 +14,25 @@ permissions:
   packages: write
 
 jobs:
+  # --- NEW: Gitleaks Security Scan Job ---
+  security-scan:
+    name: Gitleaks Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required so Gitleaks can scan the full commit history
+
+      - name: Run Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: "" # Leave empty for free/open-source tier
+
+  # --- Existing Job Updated with 'needs' ---
   build-and-deploy:
+    needs: security-scan # Forces this job to wait for a successful security scan
     name: Build, Test, Push and Deploy
     runs-on: ubuntu-latest
 
