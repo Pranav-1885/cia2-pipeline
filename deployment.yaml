@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: library-catalog-deployment
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: library-catalog
